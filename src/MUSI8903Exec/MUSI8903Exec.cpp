@@ -83,8 +83,8 @@ int main(int argc, char* argv[])
             {
                 hOutputFile << ppfAudioData[c][i] << "\t";
             }
-            hOutputFile << endl;
         }
+        
     }
 
     cout << "reading/writing done in: \t"    << (clock()-time)*1.F/CLOCKS_PER_SEC << " seconds." << endl;
