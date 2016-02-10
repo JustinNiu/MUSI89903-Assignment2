@@ -16,8 +16,12 @@
 
 class vibrato{
     
-    CRingBuffer<float> **fRingBuff;
-    LFO_Niu ppcLFO;
+    CRingBuffer<float> **fRingDelayLine;
+    LFO_Niu* ppcSine;
+    float freq;
+    int width;
+    int delay;
+    int numVar;
     
     
 public:
