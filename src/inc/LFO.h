@@ -20,14 +20,14 @@ class LFO_Niu{
     
 public:
     
-    LFO();
-    ~LFO(){
+    LFO_Niu();
+    ~LFO_Niu(){
         freq = 0;
     }
-    void setFreq();
+    void setFreq( float);
 //    void setAmp();
     
-    void getSine();
+    float getSine( float);
 };
 
 
@@ -37,8 +37,8 @@ void LFO_Niu::setFreq(float thisFreq){
 //    amp = thisAmp;
 }
 
-void LFO_Niu::getSine(float TimeInSec){
-    return sin(2 * PI *freq * TimeInSec)
+float LFO_Niu::getSine(float TimeInSec){
+    return sin(2 * PI *freq * TimeInSec);
 }
 
 #endif /* LFO_h */
