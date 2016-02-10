@@ -8,7 +8,7 @@
 
 #define WITH_FLOATEXCEPTIONS
 #define WITH_MEMORYCHECK
-
+static const int la = 10;
 #if (!defined(NDEBUG) && defined (GTCMT_WIN32))
     // include exception header
     #if defined(WITH_FLOATEXCEPTIONS) 
