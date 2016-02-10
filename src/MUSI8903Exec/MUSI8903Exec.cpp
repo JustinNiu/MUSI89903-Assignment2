@@ -83,6 +83,7 @@ int main(int argc, char* argv[])
             {
                 hOutputFile << ppfAudioData[c][i] << "\t";
             }
+            hOutputFile <<endl;
         }
         
     }
