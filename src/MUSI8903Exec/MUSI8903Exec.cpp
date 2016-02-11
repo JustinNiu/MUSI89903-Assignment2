@@ -25,11 +25,13 @@ int main(int argc, char* argv[])
     clock_t                 time                = 0;
 
     float                   **ppfAudioData		= 0,
+                            **ppfAudioOutput    = 0,
                             modFreq				= 0.F,
-                            modAmpInSecs			= 0.F,
-                            delayWidthInSecs		= 0.1F;
+                            modAmpInSecs		= 0.F,
+                            delayWidthInSecs	= 0.1F;
 
     CAudioFileIf            *phAudioFile        = 0;
+    CVibrato				*cvibrato			= 0;
     std::fstream            hOutputFile;
     CAudioFileIf::FileSpec_t stFileSpec;
 
@@ -70,9 +72,13 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
     // allocate memory
     ppfAudioData            = new float* [stFileSpec.iNumChannels];
-    for (int i = 0; i < stFileSpec.iNumChannels; i++)
-        ppfAudioData[i] = new float [kBlockSize];
+    ppfAudioOutput          = new float* [stFileSpec.iNumChannels];
 
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+    {
+        ppfAudioData[i] = new float [kBlockSize];
+        ppfAudioOutput[i] = new float [kBlockSize];
+    }
     time                    = clock();
     //////////////////////////////////////////////////////////////////////////////
     // get audio data and write it to the output file
@@ -100,10 +106,19 @@ int main(int argc, char* argv[])
     hOutputFile.close();
 
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
+    {
         delete [] ppfAudioData[i];
+    }
     delete [] ppfAudioData;
     ppfAudioData = 0;
-
+    return 0;
+    
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+    {
+        delete [] ppfAudioOutput[i];
+    }
+    delete [] ppfAudioOutput;
+    ppfAudioOutput = 0;
     return 0;
     
 }
@@ -112,7 +127,7 @@ int main(int argc, char* argv[])
 void     showClInfo()
 {
     cout << "GTCMT MUSI8903" << endl;
-    cout << "(c) 2016 by Alexander Lerch" << endl;
+    cout << "(c) 2016 by Hua and Justin" << endl;
     cout  << endl;
 
     return;
