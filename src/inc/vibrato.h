@@ -44,7 +44,7 @@ public:
 
 
 	//set parameter functions
-	//Error_t setDelayWidth(float delay_width_secs);
+	Error_t setDelayWidth(float delay_width_secs);
 	Error_t setModAmp(float modAmpSecs);
 	Error_t setModFreq(float modFreq);
 

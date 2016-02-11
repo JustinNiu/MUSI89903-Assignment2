@@ -3,8 +3,9 @@
 #include <ctime>
 
 #include "MUSI8903Config.h"
-
+//#include "vibrato.h"
 #include "AudioFileIf.h"
+
 
 using std::cout;
 using std::endl;
@@ -23,7 +24,11 @@ int main(int argc, char* argv[])
 
     clock_t                 time                = 0;
 
-    float                   **ppfAudioData      = 0;
+    float                   **ppfInputAudioData		= 0,
+                            **ppfOutputAudioData	= 0,
+    						mod_freq				= 0.F,
+                            mod_amp_secs			= 0.F,
+                            delay_width_secs		= 0.1F;
 
     CAudioFileIf            *phAudioFile        = 0;
     std::fstream            hOutputFile;
