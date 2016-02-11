@@ -155,6 +155,8 @@ Error_t CVibrato::setModAmp(float delay_width_secs)
 	return kNoError;
 }
 
+
+//set the modFreq
 Error_t CVibrato::setModFreq(float mod_freq)
 {
 	if (mod_freq < 0)
@@ -205,12 +207,5 @@ Error_t CVibrato::process(float **input_buffer, float **output_buffer, int numbe
 	}
 	return kNoError;
 }
-
-
-
-
-
-
-
 
 
