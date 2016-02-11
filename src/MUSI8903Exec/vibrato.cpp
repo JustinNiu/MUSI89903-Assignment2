@@ -41,8 +41,7 @@ CVibrato::~CVibrato() {}
 
  Error_t CVibrato::create(CVibrato*& pCVibrato, long int sample_rate, int num_channels)
 {
-	// Hard limit on the maximum delay buffer size set to 2 seconds.
-	float maxwidth_sec = 2.0F;
+	float maxwidth_sec = 1.0F;
 	pCVibrato = new CVibrato(maxwidth_sec, num_channels, sample_rate);
 
 	if (!pCVibrato)
@@ -69,30 +68,30 @@ Error_t CVibrato::destroy(CVibrato*& pCVibrato)
 	return kNoError;
 }
 
-Error_t CVibrato::init(float mod_freq, float delay_width_secs, float mod_amp_secs)
+Error_t CVibrato::init(float thisModFreq, float thisDelayWidthInSecs, float thisModAmpSecs)
 {
 	reset();
 
-	// initialise parameters
-	LFOFreq = mod_freq;
-	convertTimeToSamples(delay_width_secs, width);
-	convertTimeToSamples(mod_amp_secs, LFOAmp);
-	ppcLFO->setFreq(mod_freq);
+	// initialise the parameters
+	LFOFreq = thisModFreq;
+	convertTimeToSamples(thisDelayWidthInSecs, width);
+	convertTimeToSamples(thisModAmpSecs, LFOAmp);
+	ppcLFO->setFreq(thisModFreq);
 
-	// check parameter validity
+	// parameter validity check
+    if (LFOAmp > width)
+        return kFunctionInvalidArgsError;
+    
 	if (width * 2 > entireDelay)
 		return kFunctionInvalidArgsError;
 
 	if (LFOAmp < 0 || width < 0)
 		return kFunctionInvalidArgsError;
 
-	if (LFOAmp > width)
-		return kFunctionInvalidArgsError;
-
 	if (width + LFOAmp > entireDelay)
 		return kFunctionInvalidArgsError;
 
-	// set ring buffer write index
+	// set ring buffer
 	int delay_length = width + LFOAmp;
 	for (int i = 0; i < numChannels; i++) {
 
@@ -116,13 +115,15 @@ Error_t CVibrato::reset()
 	return kNoError;
 }
 
+
+//convert the timeInSec to timeInSamples
 Error_t CVibrato::convertTimeToSamples(float paramValue, int& param)
 {
 	param = static_cast<int>(round(paramValue * sampleRate));
 	return kNoError;
 }
 
-
+//set the modAmp and check error
 Error_t CVibrato::setModAmp(float delay_width_secs)
 {
 	int temp = 0;
