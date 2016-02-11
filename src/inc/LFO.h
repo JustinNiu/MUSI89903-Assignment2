@@ -21,6 +21,9 @@ class LFO_Niu{
 public:
     
     LFO_Niu();
+    LFO_Niu(float a){
+        freq = a;
+    }
     ~LFO_Niu(){
         freq = 0;
     }
