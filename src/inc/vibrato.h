@@ -34,7 +34,7 @@ private:
     int numChannels;
     long long int processedSamples;
     
-    Error_t convertTimeToSamples(float paramValue, int& param);
+    void convertTimeToSamples(float paramValue, int& param);
     
     
 public:
@@ -48,13 +48,13 @@ public:
     
     //set parameter functions
     Error_t setDelayWidth(float delay_width_secs);
-    Error_t setModAmp(float modAmpSecs);
-    Error_t setModFreq(float modFreq);
+    void setModAmp(float modAmpSecs);
+    void setModFreq(float modFreq);
     
     //get parameter functions
-    Error_t getDelayWidth(int& delayWidth);
-    Error_t getModAmp(int& modAmp);
-    Error_t getModFreq(float& modFreq);
+    void getDelayWidth(int& delayWidth);
+    void getModAmp(int& modAmp);
+    void getModFreq(float& modFreq);
     
     //process function
     Error_t process(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
@@ -63,7 +63,9 @@ public:
 CVibrato::CVibrato(float maxwidth_secs, int num_channels, long int sample_rate)
 {
     CRingBuffer<float> **fRingBuff;
-    LFO_Niu* ppcLFO;
+    
+    ppcLFO = new LFO_Niu(0.F);
+    
     sampleRate = sample_rate;
     numChannels = num_channels;
     processedSamples = 0;
@@ -93,6 +95,8 @@ Error_t CVibrato::create(CVibrato*& pCVibrato, long int sample_rate, int num_cha
     
     return kNoError;
 }
+
+
 
 Error_t CVibrato::destroy(CVibrato*& pCVibrato)
 {
@@ -147,7 +151,6 @@ Error_t CVibrato::init(float thisModFreq, float thisDelayWidthInSecs, float this
 
 Error_t CVibrato::reset()
 {
-    // reset buffers and variables to default values
     LFOFreq = 0.F;
     width = 0;
     LFOAmp = 0;
@@ -161,19 +164,17 @@ Error_t CVibrato::reset()
 
 
 //convert the timeInSec to timeInSamples
-Error_t CVibrato::convertTimeToSamples(float paramValue, int& param)
+void CVibrato::convertTimeToSamples(float paramValue, int& param)
 {
     param = static_cast<int>(round(paramValue * sampleRate));
-    return kNoError;
 }
 
 //set the modAmp and check error
-Error_t CVibrato::setModAmp(float delay_width_secs)
+void CVibrato::setModAmp(float delay_width_secs)
 {
     int temp = 0;
     convertTimeToSamples(delay_width_secs, temp);
-    if (temp > width || temp < 0)
-        return kFunctionInvalidArgsError;
+    
     
     int num_additional_taps = temp - LFOAmp;
     if (num_additional_taps < 0)
@@ -196,39 +197,55 @@ Error_t CVibrato::setModAmp(float delay_width_secs)
     }
     
     LFOAmp = temp;
-    return kNoError;
 }
 
 
 //set the modFreq
-Error_t CVibrato::setModFreq(float mod_freq)
+void CVibrato::setModFreq(float thisModFreq)
 {
-    if (mod_freq < 0)
-        return kFunctionInvalidArgsError;
-    LFOFreq = mod_freq;
+    
+    LFOFreq = thisModFreq;
     ppcLFO->setFreq(LFOFreq);
-    return kNoError;
 }
 
-Error_t CVibrato::getDelayWidth(int &delay_width)
+void CVibrato::getDelayWidth(int &delayWidth)
 {
-    delay_width = width;
-    return kNoError;
+    delayWidth = width;
 }
 
-Error_t CVibrato::getModAmp(int &mod_amp)
+void CVibrato::getModAmp(int &modAmp)
 {
-    mod_amp = LFOAmp;
-    return kNoError;
+    modAmp = LFOAmp;
 }
 
-Error_t CVibrato::getModFreq(float &mod_freq)
+void CVibrato::getModFreq(float &modFreq)
 {
-    mod_freq = LFOFreq;
-    return kNoError;
+    modFreq = LFOFreq;
 }
 
-Error_t CVibrato::process(float **input_buffer, float **output_buffer, int number_of_frames)
+//Error_t CVibrato::process(float **input_buffer, float **outputBuffer, int numberOfFrames)
+//{
+//    float temp = 0;
+//    double tap = 0;
+//    
+//    for (int i = 0; i < numberOfFrames; i++)
+//    {
+//        for (int j = 0; j < numChannels; j++)
+//        {
+//            fRingBuff[j]->putPostInc(input_buffer[j][i]);
+//            temp = fRingBuff[j]->getPostInc();
+//            float time = processedSamples / static_cast<float>(sampleRate);
+//            tap = 1 + width + LFOAmp * ppcLFO->getSine(time);
+//            tap = fRingBuff[j]->getWriteIdx() - tap - fRingBuff[j]->getReadIdx();
+//            outputBuffer[j][i] = fRingBuff[j]->get(tap);
+//        }
+//        processedSamples++;
+//    }
+//    return kNoError;
+//}
+
+
+Error_t CVibrato::process (float **input_buffer, float **output_buffer, int number_of_frames)
 {
     float temp = 0;
     double tap = 0;
@@ -238,20 +255,16 @@ Error_t CVibrato::process(float **input_buffer, float **output_buffer, int numbe
         for (int channel_id = 0; channel_id < numChannels; channel_id++)
         {
             fRingBuff[channel_id]->putPostInc(input_buffer[channel_id][data_id]);
-            //cout << "Write Index: " << fRingBuff[channel_id]->getWriteIdx() << endl;
             temp = fRingBuff[channel_id]->getPostInc();
-            //cout << "Read Index: " << fRingBuff[channel_id]->getReadIdx() << endl;
-            float time = processedSamples / static_cast<float>(sampleRate);
-            tap = 1 + width + LFOAmp * ppcLFO->getSine(time);
+            double time = processedSamples/static_cast<double>(sampleRate);
+            tap  = 1 + width + LFOAmp * ppcLFO->getSine(time);
             tap = fRingBuff[channel_id]->getWriteIdx() - tap - fRingBuff[channel_id]->getReadIdx();
             output_buffer[channel_id][data_id] = fRingBuff[channel_id]->get(tap);
-            //cout << output_buffer[channel_id][data_id]<< " " << tap <<endl;
         }
         processedSamples++;
     }
     return kNoError;
 }
-
 
 
 

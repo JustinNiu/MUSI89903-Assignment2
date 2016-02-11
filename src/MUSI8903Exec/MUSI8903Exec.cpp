@@ -1,16 +1,15 @@
 
 #include <iostream>
 #include <ctime>
+#include <cmath>
 
 #include "MUSI8903Config.h"
 #include "AudioFileIf.h"
 #include "vibrato.h"
 
 
-using std::cout;
-using std::endl;
+using namespace std;
 
-// local function declarations
 void    showClInfo ();
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -27,12 +26,13 @@ int main(int argc, char* argv[])
     float                   **ppfAudioData		= 0,
                             **ppfAudioOutput    = 0,
                             modFreq				= 0.F,
-                            modAmpInSecs		= 0.F,
-                            delayWidthInSecs	= 0.1F;
+                            modAmpInSecs		= 0.F;
+//                            widthInSecs         = 0.1F;
 
     CAudioFileIf            *phAudioFile        = 0;
     CVibrato				*cvibrato			= 0;
-    std::fstream            hOutputFile;
+    std::fstream            hOutputFile,
+                            hInfile;
     CAudioFileIf::FileSpec_t stFileSpec;
 
     showClInfo ();
@@ -47,6 +47,8 @@ int main(int argc, char* argv[])
     {
         sInputFilePath  = argv[1];
         sOutputFilePath = sInputFilePath + ".txt";
+        modFreq = stof(argv[2]);
+        modAmpInSecs = stof(argv[3]);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -81,19 +83,28 @@ int main(int argc, char* argv[])
     }
     time                    = clock();
     //////////////////////////////////////////////////////////////////////////////
-    // get audio data and write it to the output file
+    // add vabrito and write it to the output file
+    
+//    error_check = CVibrato::create(cvibrato, stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
+//    error_check = cvibrato->init(modFreq, widthInSecs, modAmpInSecs);
+//    
+   
+    
+    
     while (!phAudioFile->isEof())
     {
         long long iNumFrames = kBlockSize;
         phAudioFile->readData(ppfAudioData, iNumFrames);
-
+        cvibrato->process(ppfAudioData, ppfAudioOutput, iNumFrames);
         for (int i = 0; i < iNumFrames; i++)
         {
             for (int c = 0; c < stFileSpec.iNumChannels; c++)
             {
                 hOutputFile << ppfAudioData[c][i] << "\t";
+                hInfile << ppfAudioData[c][i] << " ";
             }
             hOutputFile <<endl;
+            hInfile << endl;
         }
         
     }
@@ -104,6 +115,7 @@ int main(int argc, char* argv[])
     // clean-up
     CAudioFileIf::destroy(phAudioFile);
     hOutputFile.close();
+    hInfile.close();
 
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
     {
